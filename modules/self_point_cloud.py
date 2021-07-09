@@ -3,7 +3,7 @@ import open3d as o3d
 from modules.self_logger import SelfLogger
 
 
-class CloudReader:
+class SelfPointCloud:
     def __init__(self, file_path, voxel_size):
         self._logger = SelfLogger.get_logger(__file__)
         self._file_path = file_path
@@ -11,7 +11,7 @@ class CloudReader:
 
         self.points = self._read_xyz()
         self.points_down = self._down_sampling(self.points)
-        self.fpfh = self._calc_fpfh(self.points_down)
+        self.fpfh_down = self._calc_fpfh(self.points_down)
         self.tree = o3d.geometry.KDTreeFlann(self.points)
 
     def _read_xyz(self):
@@ -40,8 +40,8 @@ class CloudReader:
 
 
 def main():
-    cloud_a = CloudReader("../data/a.xyz", 0.05)
-    cloud_b = CloudReader("../data/b.xyz", 0.05)
+    cloud_a = SelfPointCloud("../data/a.xyz", 0.05)
+    cloud_b = SelfPointCloud("../data/b.xyz", 0.05)
     o3d.visualization.draw_geometries([cloud_a.points, cloud_b.points])
 
 
