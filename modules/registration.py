@@ -1,12 +1,22 @@
 import open3d as o3d
 from modules.self_point_cloud import SelfPointCloud
-from modules.self_logger import SelfLogger
 from modules.registration_if import RegistrationIF
+import numpy as np
+
+
+class SelfTransformationEstimation(o3d.pipelines.registration.TransformationEstimationPointToPoint):
+    def __init__(self, *args, **kwargs):
+        if args:
+            super().__init__(args[0])
+        elif kwargs:
+            super().__init__(kwargs["with_scaling"])
+        else:
+            super().__init__(with_scaling=None)
 
 
 class Registration(RegistrationIF):
     def __init__(self, file_a, file_b, voxel_size):
-        super(Registration, self).__init__(file_a, file_b, voxel_size)
+        super().__init__(file_a, file_b, voxel_size)
 
     def refine_registration(self, source: SelfPointCloud, target: SelfPointCloud):
         distance_threshold = self.voxel_size * 0.4
@@ -15,7 +25,9 @@ class Registration(RegistrationIF):
         self._logger.debug(f"   distance threshold {distance_threshold:.3f}.")
         result = o3d.pipelines.registration.registration_icp(
             source.points, target.points, distance_threshold, self.result_ransac.transformation,
-            o3d.pipelines.registration.TransformationEstimationPointToPoint())
+            # o3d.pipelines.registration.TransformationEstimationPointToPoint()
+            SelfTransformationEstimation()
+        )
         return result
 
 

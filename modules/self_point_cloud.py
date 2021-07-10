@@ -14,14 +14,14 @@ class SelfPointCloud:
         self.fpfh_down = self._calc_fpfh(self.points_down)
         self.tree = o3d.geometry.KDTreeFlann(self.points)
 
-    def _read_xyz(self):
+    def _read_xyz(self) -> o3d.geometry.PointCloud:
         df = dd.read_csv(self._file_path, names=["x", "y", "z", "r", "g", "b"]).compute()
         cloud = o3d.geometry.PointCloud()
         cloud.points = o3d.utility.Vector3dVector(df[["x", "y", "z"]].to_numpy())
         cloud.colors = o3d.utility.Vector3dVector(df[["r", "g", "b"]].to_numpy() / 256)
         return cloud
 
-    def _down_sampling(self, cloud):
+    def _down_sampling(self, cloud) -> o3d.geometry.PointCloud:
         self._logger.debug(f"Down sample with a voxel size {self.voxel_size:.3f}.")
         cloud_down = cloud.voxel_down_sample(self.voxel_size)
 
@@ -31,7 +31,7 @@ class SelfPointCloud:
             o3d.geometry.KDTreeSearchParamHybrid(radius=radius_normal, max_nn=30))
         return cloud_down
 
-    def _calc_fpfh(self, cloud_down):
+    def _calc_fpfh(self, cloud_down) -> o3d.pipelines.registration.Feature:
         radius_feature = self.voxel_size * 5
         self._logger.debug(f":: Compute FPFH feature with search radius {radius_feature:.3f}.")
         fpfh = o3d.pipelines.registration.compute_fpfh_feature(
