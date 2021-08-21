@@ -6,7 +6,7 @@ from pprint import pformat
 # namedtuple はクラスを返す関数：引数はそれぞれクラス名・属性
 class Node(namedtuple("Node", "location left_child right_child")):
     """
-
+    ２分木ノード
     """
     def __repr__(self):
         """
@@ -49,11 +49,11 @@ class KDTree:
         # ノード作成
         return Node(
             # 中点
-            location=point_list[median],
+            point_list[median],
             # 子ツリー（小さい側）
-            left_child=self._make_tree(point_list[:median], depth + 1),
+            self._make_tree(point_list[:median], depth + 1),
             # 子ツリー（大きい側）
-            right_child=self._make_tree(point_list[median + 1:], depth + 1),
+            self._make_tree(point_list[median + 1:], depth + 1),
         )
 
     def get_leaf(self, point):
@@ -61,7 +61,6 @@ class KDTree:
 
     def _get_child(self, point, node, depth, ans):
         if node is None:
-            node = Node(location=point, left_child=None, right_child=None)
             return ans
 
         axis = depth % self._k
@@ -75,16 +74,18 @@ class KDTree:
             raise ValueError("Invalid input point!")
 
     def add_point(self, point):
-        branch = self.tree
-        for side in path:
-            if side is "L":
-                branch = branch.left_child
-            elif side is "R":
-                branch = branch.right_child
-            else:
-                raise ValueError("Invalid input path!")
+        KDTree._insert(self.tree, point)
 
-        branch = Node(location=point, left_child=None, right_child=None)
+    @staticmethod
+    def _insert(node, point):
+        if node is None:
+            return Node(point, None, None)
+        elif point == node.location:
+            return node
+        elif point < node.location:
+            node.left_child = KDTree._insert(node.left_child, point)
+        else:
+            node.right_child = KDTree._insert(node.right_child, point)
 
     def search_nearest(self, point):
         pass
@@ -94,8 +95,13 @@ def main():
     """Example usage"""
     point_list = [(7, 2), (5, 4), (9, 6), (4, 7), (8, 1), (2, 3)]
     kd_tree = KDTree(point_list)
+    print(kd_tree)
+
     leaf = kd_tree.get_leaf((2, 7))
     print(leaf)
+
+    kd_tree.add_point((2, 7))
+    print(kd_tree)
 
 
 if __name__ == "__main__":
